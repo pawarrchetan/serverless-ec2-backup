@@ -1,0 +1,52 @@
+service: ${env:FUNCTION_NAME}
+
+provider:
+  name: aws
+  region: eu-central-1
+  AWS_ACCOUNT: ${env:AWS_ACCOUNT}
+  runtime: python3.7
+  iamManagedPolicies:
+  - arn:aws:iam::aws:policy/AWSLambdaExecute
+  - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  iamRoleStatements:
+  - Effect: 'Allow'
+    Action:
+    - ec2:CreateImage
+    - ec2:CreateSnapshots
+    - ec2:CreateSnapshot
+    - ec2:CreateTags
+    - ec2:DeleteTags
+    - ec2:DeleteSnapshot
+    - ec2:DeregisterImage
+    - ec2:DescribeImages
+    - ec2:DescribeImageAttribute
+    - ec2:DescribeInstances
+    - ec2:DescribeInstanceAttribute
+    - ec2:DescribeInstanceCreditSpecifications
+    - ec2:DescribeInstanceStatus
+    - ec2:DescribeSnapshots
+    - ec2:DescribeSnapshotAttribute
+    - kms:Encrypt
+    - kms:Decrypt
+    - kms:ReEncrypt*
+    - kms:GenerateDataKey*
+    - kms:CreateGrant
+    - kms:DescribeKey
+    - lambda:AddPermission
+    - lambda:GetFunction
+    - logs:*
+    Resource: "*"
+
+package:
+  exclude:
+  - package/**
+
+functions:
+  ami-backup:
+    name: ${env:FUNCTION_NAME}
+    description: Function used to manage EC2 instance backup
+    handler: handler.lambda_handler
+    events:
+      - schedule: cron(0 19 * * ? *)    # everyday at 1900
+    environment:
+      RETENTION_DAYS: ${env:RETENTION_DAYS}
